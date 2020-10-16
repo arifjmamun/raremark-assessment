@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  booking-api:
+    build: ./booking-api
+    restart: always
+    container_name: booking-api
+    ports:
+      - 8888:8888
+    env_file: 
+      - ./booking-api/.env
+    volumes:
+      - ./booking-api:/usr/src/app
+      - /usr/src/app/node_modules
