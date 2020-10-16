@@ -1,0 +1,17 @@
+1. Property details CRUD operations for user -                6 hours
+2. Property search page -                                     4 hours 
+  - Fields: location, dates including available fields 
+  - Optional: pagination
+3. Listing search result and navigate to detail page -        2 hours
+4. Property detail page (optional: comments, ratings) -       4 hours
+5. Landing page using mock API including comment and review - 4 hours
+6. Write NodeJs backend API server
+  - Mocking the landing page API -                            1 hour
+  - Property details CRUD API -                               4 hours
+  - Property search API (filtering, pagination) -             4 hours
+  - Optional: Comment CRUD API -                              2 hours
+  - Optional: Rating Add/Update API -                         1 hour
+7. Containerized the application using docker -               2 hours
+
+===================================================================================
+                                                      Total - 32 hours
