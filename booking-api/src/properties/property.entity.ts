@@ -10,6 +10,9 @@ export class Property {
   @Column({ type: 'varchar', nullable: false })
   title: string;
 
+  @Column({ type: 'float', nullable: false })
+  price: number;
+
   @Column({ type: 'simple-enum', nullable: false })
   type: PropertyType;
 
@@ -24,9 +27,6 @@ export class Property {
 
   @Column({ type: 'varchar', nullable: false })
   city: string;
-
-  // @Column({ type: 'daterange', nullable: false })
-  // availableDateRange: string;
 
   @Column({ type: 'datetime', nullable: false })
   fromDate: Date;

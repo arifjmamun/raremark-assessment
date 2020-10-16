@@ -1,10 +1,14 @@
-import { IsNotEmpty, IsEnum, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsNumberString } from 'class-validator';
 
 import { PropertyType } from "../types/property-type.enum";
 
 export class CreatePropertyDto {
   @IsNotEmpty()
   title: string;
+
+  @IsNotEmpty()
+  @IsNumberString()
+  price: string;
 
   @IsNotEmpty()
   description: string;

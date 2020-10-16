@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like, FindConditions, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import * as fs from 'fs';
 import { join } from 'path';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { Property } from './property.entity';
 import { UploadFile } from './types/upload-file.model';
+import { EDateType, LessThanOrEqualDate, MoreThanOrEqualDate } from '../common/utils/datetime.util';
+import { PaginatedList } from '../common/models/paginated-list.model';
+import { format } from 'date-fns';
 
 @Injectable()
 export class PropertiesService {
@@ -51,7 +54,10 @@ export class PropertiesService {
       property = {
         ...property,
         ...createPropertyDto,
-        images: images
+        fromDate: new Date(`${createPropertyDto.fromDate}T00:00:00Z`),
+        toDate: new Date(`${createPropertyDto.fromDate}T23:59:59Z`),
+        images: images,
+        price: parseFloat(createPropertyDto.price)
       };
 
       return await this.propertiesRepository.save(property);
@@ -61,8 +67,37 @@ export class PropertiesService {
     }
   }
 
-  async findAll(): Promise<Property[]> {
-    return this.propertiesRepository.find();
+  async findAll(
+    pageSize = 4,
+    page = 1,
+    fromDate?: string,
+    toDate?: string,
+    searchTerm?: string
+  ): Promise<PaginatedList<Property>> {
+    const conditions: FindConditions<Property>[] = [];
+
+    if (searchTerm) {
+      searchTerm = `%${searchTerm}%`;
+      conditions.push(...[{ country: Like(searchTerm) }, { city: Like(searchTerm) }]);
+    }
+
+    if (fromDate && toDate) {
+      const rangeFrom = new Date(new Date(fromDate).setHours(0, 0, 0));
+      const rangeTo = new Date(new Date(toDate).setHours(23, 59, 59));
+      const dateRangeCndition: FindConditions<Property> = {
+        fromDate: MoreThanOrEqualDate(rangeFrom, EDateType.Datetime),
+        toDate: LessThanOrEqualDate(rangeTo, EDateType.Datetime)
+      };
+      conditions.push(dateRangeCndition);
+    }
+
+    const [properties, count] = await this.propertiesRepository.findAndCount({
+      where: conditions,
+      skip: pageSize * (page - 1),
+      take: pageSize
+    });
+
+    return PaginatedList.create<Property>(count, properties);
   }
 
   findOne(id: string): Promise<Property> {
