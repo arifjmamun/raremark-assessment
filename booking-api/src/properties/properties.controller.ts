@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UseInterceptors,
   Query,
   HttpStatus,
@@ -19,6 +20,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertiesService } from './properties.service';
 import { UploadFile } from './types/upload-file.model';
 import { PaginatedList } from '../common/models/paginated-list.model';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Controller('properties')
 export class PropertiesController {
@@ -26,8 +28,13 @@ export class PropertiesController {
 
   @Post()
   @UseInterceptors(AnyFilesInterceptor())
-  create(@UploadedFiles() files: UploadFile[], @Body() createPropertyDto: CreatePropertyDto): Promise<Property> {
-    return this.propertiesService.create(files, createPropertyDto);
+  async create(@UploadedFiles() files: UploadFile[], @Body() createPropertyDto: CreatePropertyDto): Promise<Property | HttpException> {
+    try {
+      return await this.propertiesService.create(files, createPropertyDto);      
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get()
@@ -41,17 +48,27 @@ export class PropertiesController {
       return propertyList;
     } catch (error) {
       console.log(error);
-      return new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST);
     }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Property> {
-    return this.propertiesService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<Property> {
+    return await this.propertiesService.findOne(parseInt(id));
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updatePropertyDto: UpdatePropertyDto): Promise<Property | HttpException> {
+    try {
+      return await this.propertiesService.updateOne(parseInt(id), updatePropertyDto);      
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.propertiesService.remove(id);
+  async remove(@Param('id') id: number): Promise<void> {
+    return await this.propertiesService.remove(id);
   }
 }

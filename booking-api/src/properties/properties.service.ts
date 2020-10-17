@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindConditions, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository, Like, FindConditions } from 'typeorm';
 import * as fs from 'fs';
 import { join } from 'path';
 
@@ -9,7 +9,7 @@ import { Property } from './property.entity';
 import { UploadFile } from './types/upload-file.model';
 import { EDateType, LessThanOrEqualDate, MoreThanOrEqualDate } from '../common/utils/datetime.util';
 import { PaginatedList } from '../common/models/paginated-list.model';
-import { format } from 'date-fns';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertiesService {
@@ -20,6 +20,13 @@ export class PropertiesService {
 
   async create(files: UploadFile[], createPropertyDto: CreatePropertyDto): Promise<Property> {
     try {
+      const rangeFrom = new Date(`${createPropertyDto.fromDate}T00:00:00Z`);
+      const rangeTo = new Date(`${createPropertyDto.fromDate}T23:59:59Z`);
+
+      if (rangeFrom > rangeTo) {
+        throw new Error('Invalid date range');
+      }
+
       const basePath = '../../uploads';
       const images: string[] = [];
 
@@ -54,16 +61,15 @@ export class PropertiesService {
       property = {
         ...property,
         ...createPropertyDto,
-        fromDate: new Date(`${createPropertyDto.fromDate}T00:00:00Z`),
-        toDate: new Date(`${createPropertyDto.fromDate}T23:59:59Z`),
+        fromDate: rangeFrom,
+        toDate: rangeTo,
         images: images,
         price: parseFloat(createPropertyDto.price)
       };
 
       return await this.propertiesRepository.save(property);
     } catch (error) {
-      console.log(error);
-      return null;
+      throw error;
     }
   }
 
@@ -74,37 +80,81 @@ export class PropertiesService {
     toDate?: string,
     searchTerm?: string
   ): Promise<PaginatedList<Property>> {
-    const conditions: FindConditions<Property>[] = [];
+    try {
+      const conditions: FindConditions<Property>[] = [];
 
-    if (searchTerm) {
-      searchTerm = `%${searchTerm}%`;
-      conditions.push(...[{ country: Like(searchTerm) }, { city: Like(searchTerm) }]);
+      if (searchTerm) {
+        searchTerm = `%${searchTerm}%`;
+        conditions.push(...[{ country: Like(searchTerm) }, { city: Like(searchTerm) }]);
+      }
+
+      if (fromDate && toDate) {
+        const rangeFrom = new Date(new Date(fromDate).setHours(0, 0, 0));
+        const rangeTo = new Date(new Date(toDate).setHours(23, 59, 59));
+        if (rangeFrom > rangeTo) {
+          throw new Error('Invalid date range');
+        }
+        const dateRangeCndition: FindConditions<Property> = {
+          fromDate: MoreThanOrEqualDate(rangeFrom, EDateType.Datetime),
+          toDate: LessThanOrEqualDate(rangeTo, EDateType.Datetime)
+        };
+        conditions.push(dateRangeCndition);
+      }
+
+      const [properties, count] = await this.propertiesRepository.findAndCount({
+        where: conditions,
+        skip: pageSize * (page - 1),
+        take: pageSize
+      });
+
+      return PaginatedList.create<Property>(count, properties);
+    } catch (error) {
+      throw error;
     }
+  }
 
-    if (fromDate && toDate) {
-      const rangeFrom = new Date(new Date(fromDate).setHours(0, 0, 0));
-      const rangeTo = new Date(new Date(toDate).setHours(23, 59, 59));
-      const dateRangeCndition: FindConditions<Property> = {
-        fromDate: MoreThanOrEqualDate(rangeFrom, EDateType.Datetime),
-        toDate: LessThanOrEqualDate(rangeTo, EDateType.Datetime)
+  async updateOne(id: number, updatePropertyDto: UpdatePropertyDto): Promise<Property> {
+    try {
+      if (id !== updatePropertyDto.id) {
+        throw new Error('Invalid ID');
+      }
+      let property = await this.propertiesRepository.findOne(id);
+
+      if (!property) {
+        throw new Error('Property not found!');
+      }
+
+      property = {
+        ...property,
+        ...updatePropertyDto
       };
-      conditions.push(dateRangeCndition);
+
+      const { fromDate, toDate } = updatePropertyDto;
+
+      if (fromDate && toDate) {
+        const rangeFrom = new Date(new Date(fromDate).setHours(0, 0, 0));
+        const rangeTo = new Date(new Date(toDate).setHours(23, 59, 59));
+        if (rangeFrom > rangeTo) {
+          throw new Error('Invalid date range');
+        }
+        property = {
+          ...property,
+          fromDate: rangeFrom,
+          toDate: rangeTo
+        };
+      }
+
+      return await this.propertiesRepository.save(property);
+    } catch (error) {
+      throw error;
     }
-
-    const [properties, count] = await this.propertiesRepository.findAndCount({
-      where: conditions,
-      skip: pageSize * (page - 1),
-      take: pageSize
-    });
-
-    return PaginatedList.create<Property>(count, properties);
   }
 
-  findOne(id: string): Promise<Property> {
-    return this.propertiesRepository.findOne(id);
+  async findOne(id: number): Promise<Property> {
+    return await this.propertiesRepository.findOne(id);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     await this.propertiesRepository.delete(id);
   }
 }
