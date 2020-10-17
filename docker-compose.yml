@@ -1,14 +1,25 @@
 version: "3.8"
 
 services:
+  booking-app:
+    stdin_open: true
+    build: ./booking-app
+    container_name: booking-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - "/app/node_modules"
+      - "./:/app"
+    depends_on:
+      - booking-api
   booking-api:
     build: ./booking-api
     restart: always
     container_name: booking-api
     ports:
-      - 8888:8888
+      - "8888:8888"
     env_file: 
       - ./booking-api/.env
     volumes:
-      - ./booking-api:/usr/src/app
-      - /usr/src/app/node_modules
+      - "/app/node_modules"
+      - "./:/app"
