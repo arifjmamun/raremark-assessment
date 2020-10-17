@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, Card, Table, Modal, Space } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Card, Table, Space } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { format } from 'date-fns';
 import { ColumnsType, TablePaginationConfig } from 'antd/lib/table';
 
-import { PropertiesService } from './services/PropertiesService';
+import { PropertiesService } from '../../services/PropertiesService';
 import { Property } from './models/Property';
 import { DateFormat } from '../../constants/date-format';
 import CardHeader from './components/CardHeader';
@@ -46,7 +46,7 @@ const columns: ColumnsType<Property> = [
   {
     title: 'Action',
     key: 'action',
-    render: (text: any, record: any) => (
+    render: () => (
       <Space size="middle">
         <Button type="link" icon={<DeleteOutlined />} />
         <Button type="link" icon={<EditOutlined />} />
@@ -55,9 +55,9 @@ const columns: ColumnsType<Property> = [
   }
 ];
 
-const propertiesService = new PropertiesService();
+const propertiesService = PropertiesService.getInstance();
 
-function PropertyList() {
+function PropertyListPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Property[]>([]);
   const [count, setCount] = useState<number>(0);
@@ -72,7 +72,7 @@ function PropertyList() {
         setData(() => response.data.items);
         setCount(() => response.data.count);
       })
-      .catch((error) => {
+      .catch(() => {
         setLoading(() => false);
         setData(() => []);
       });
@@ -112,4 +112,4 @@ function PropertyList() {
   );
 }
 
-export { PropertyList as default };
+export { PropertyListPage as default };

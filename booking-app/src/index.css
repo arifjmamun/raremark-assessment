@@ -11,13 +11,20 @@ body {
   width: 100% !important;
 }
 
-/* #components-layout-demo-fixed .logo {
-  width: 120px;
-  height: 31px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 16px 24px 16px 0;
-  float: left;
+.ant-form-inline .ant-form-item {
+  margin-right: 0 !important;
 }
-.site-layout .site-layout-background {
-  background: #fff;
-} */
+
+.searchbar {
+  align-items: center;
+  justify-content: center;
+}
+
+.ant-card-meta-title {
+  margin-bottom: 0 !important;
+}
+
+.ant-layout-header {
+  height: 40px;
+  line-height: 40px;
+}

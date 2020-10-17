@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DatePicker, Select, Button, InputNumber, Input, Modal, Form } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 interface Props {
   visible: boolean;
@@ -9,7 +8,6 @@ interface Props {
 }
 
 function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
-
   const [form] = Form.useForm();
   const [requiredMark, setRequiredMarkType] = useState<boolean | 'optional'>('optional');
 
@@ -78,8 +76,8 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
 
         <Form.Item
           name={['property', 'availableDateRange']}
-          label="RangePicker"
-          rules={[{ type: 'array', required: true, message: 'Select date range' }]}
+          label="Select date range"
+          rules={[{ type: 'array', required: true }]}
         >
           <DatePicker.RangePicker />
         </Form.Item>
