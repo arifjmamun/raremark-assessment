@@ -23,7 +23,7 @@ import { PaginatedList } from '../common/models/paginated-list.model';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { LandingPageItem } from './types/landing-page-item.model';
 
-@Controller('properties')
+@Controller('api/properties')
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 

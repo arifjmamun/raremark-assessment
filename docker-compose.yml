@@ -3,23 +3,25 @@ version: "3.8"
 services:
   booking-app:
     stdin_open: true
-    build: ./booking-app
-    container_name: booking-app
+    build:
+      dockerfile: Dockerfile
+      context: ./booking-app
     ports:
       - "3000:3000"
     volumes:
       - "/app/node_modules"
-      - "./:/app"
+      - "./booking-app:/app"
     depends_on:
       - booking-api
   booking-api:
-    build: ./booking-api
+    build:
+      dockerfile: Dockerfile
+      context: ./booking-api
     restart: always
-    container_name: booking-api
     ports:
       - "8888:8888"
     env_file: 
       - ./booking-api/.env
     volumes:
       - "/app/node_modules"
-      - "./:/app"
+      - "./booking-api:/app"
