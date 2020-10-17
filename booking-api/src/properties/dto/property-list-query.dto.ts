@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsNumberString, IsBooleanString,  } from "class-validator";
+import { IsOptional, IsString, IsNumberString, IsEnum } from 'class-validator';
+import { PropertyType } from '../types/property-type.enum';
 
 export class PropertyListQueryDto {
   @IsOptional()
@@ -20,4 +21,8 @@ export class PropertyListQueryDto {
   @IsOptional()
   @IsString()
   searchTerm?: string;
+
+  @IsOptional()
+  @IsEnum(PropertyType)
+  type?: PropertyType;
 }

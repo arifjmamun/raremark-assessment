@@ -21,8 +21,13 @@ export class PropertiesService {
     return "http://localhost:8888/api";
   }
 
-  public getProperties = async (pageSize = 10, page = 1): Promise<AxiosResponse<PaginatedList<Property>>> => {
-    return await axios.get<PaginatedList<Property>>(`${this.baseUrl}/properties/list?pageSize=${pageSize}&page=${page}`);
+  public getProperties = async (pageSize = 10, page = 1, queryParams: any = {}): Promise<AxiosResponse<PaginatedList<Property>>> => {
+    queryParams = {
+      ...queryParams,
+      pageSize,
+      page
+    };
+    return await axios.get<PaginatedList<Property>>(`${this.baseUrl}/properties/list`, { params: queryParams });
   };
 
   public getMockApiData = async (): Promise<AxiosResponse<LandingPageItem[]>> => {

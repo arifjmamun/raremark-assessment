@@ -30,15 +30,16 @@ function SearchBar({ onSearch }: Props) {
     <Row style={{ margin: '15px 0' }} align="middle" justify="center">
       <Form layout="inline" form={form} onFinish={handleSearch} size="large">
         <Form.Item name={['query', 'searchTerm']} style={{ width: '450px' }}>
-          <Input placeholder="More places than you could ever go (but you can try!)" />
+          <Input placeholder="More places than you could ever go (but you can try!)" allowClear />
         </Form.Item>
         <Form.Item name={['query', 'checkInCheckOut']} rules={[{ type: 'array' }]}>
           <DatePicker.RangePicker allowClear />
         </Form.Item>
         <Form.Item name={['query', 'type']} style={{ width: '150px' }}>
-          <Select placeholder="Property type">
-            <Select.Option value="single">Single</Select.Option>
-            <Select.Option value="double">Double</Select.Option>
+          <Select placeholder="Property type" allowClear>
+            <Select.Option value="Single room">Single room</Select.Option>
+            <Select.Option value="Double room">Double room</Select.Option>
+            <Select.Option value="Private room">Private room</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item>

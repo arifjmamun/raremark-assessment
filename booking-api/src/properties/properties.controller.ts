@@ -43,9 +43,9 @@ export class PropertiesController {
     try {
       const pageSize = parseInt(query.pageSize) || 4;
       const page = parseInt(query.page) || 1;
-      const { fromDate, toDate, searchTerm } = query;
+      const { fromDate, toDate, searchTerm, type } = query;
 
-      const propertyList = await this.propertiesService.findAll(pageSize, page, fromDate, toDate, searchTerm);
+      const propertyList = await this.propertiesService.findAll(pageSize, page, fromDate, toDate, searchTerm, type);
       return propertyList;
     } catch (error) {
       console.log(error);

@@ -12,6 +12,7 @@ import { PaginatedList } from '../common/models/paginated-list.model';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { landingPageMock } from './mock-data/landing-page.data';
 import { LandingPageItem } from './types/landing-page-item.model';
+import { PropertyType } from './types/property-type.enum';
 
 @Injectable()
 export class PropertiesService {
@@ -23,7 +24,7 @@ export class PropertiesService {
   async create(files: UploadFile[], createPropertyDto: CreatePropertyDto): Promise<Property> {
     try {
       const rangeFrom = new Date(`${createPropertyDto.fromDate}T00:00:00Z`);
-      const rangeTo = new Date(`${createPropertyDto.fromDate}T23:59:59Z`);
+      const rangeTo = new Date(`${createPropertyDto.toDate}T23:59:59Z`);
 
       if (rangeFrom > rangeTo) {
         throw new Error('Invalid date range');
@@ -49,11 +50,12 @@ export class PropertiesService {
         const file = files[i];
 
         const filePath = await new Promise<string>((resolve, reject) => {
-          fs.writeFile(join(subDirPath, file.originalname.replace('-', '_')), file.buffer, error => {
+          const fileName = file.originalname.replace('-', '_');
+          fs.writeFile(join(subDirPath, fileName), file.buffer, error => {
             if (error) {
               reject(error);
             }
-            resolve(`/${subDir}/${file.originalname}`);
+            resolve(`/${subDir}/${fileName}`);
           });
         });
         images.push(filePath);
@@ -84,14 +86,20 @@ export class PropertiesService {
     page = 1,
     fromDate?: string,
     toDate?: string,
-    searchTerm?: string
+    searchTerm?: string,
+    type?: PropertyType
   ): Promise<PaginatedList<Property>> {
     try {
       const conditions: FindConditions<Property>[] = [];
 
       if (searchTerm) {
         searchTerm = `%${searchTerm}%`;
-        conditions.push(...[{ country: Like(searchTerm) }, { city: Like(searchTerm) }]);
+        conditions.push(...[
+          { country: Like(searchTerm) }, 
+          { city: Like(searchTerm) },
+          { description: Like(searchTerm) },
+          { title: Like(searchTerm) }
+        ]);
       }
 
       if (fromDate && toDate) {
@@ -105,6 +113,11 @@ export class PropertiesService {
           toDate: LessThanOrEqualDate(rangeTo, EDateType.Datetime)
         };
         conditions.push(dateRangeCndition);
+      }
+
+      if (type) {
+        const typeCndition: FindConditions<Property> = { type };
+        conditions.push(typeCndition);
       }
 
       const [properties, count] = await this.propertiesRepository.findAndCount({

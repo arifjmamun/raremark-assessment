@@ -11,6 +11,7 @@ import "./App.css";
 
 import PropertyListPage from "./pages/property-setup/PropertyListPage";
 import HomePage from "./pages/home/HomePage";
+import SearchPage from "./pages/search/SearchPage";
 
 const { Header, Content } = Layout;
 
@@ -36,6 +37,7 @@ function App() {
           <Switch>
             <Redirect exact from="/" to="/home" />
             <Route exact path="/home" component={HomePage} />
+            <Route exact path="/search" component={SearchPage} />
             <Route exact path="/properties/setup" component={PropertyListPage} />
           </Switch>
         </Content>

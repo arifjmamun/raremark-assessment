@@ -1,4 +1,5 @@
 export enum PropertyType {
-  Single = 'single',
-  Double = 'double'
+  Single = 'Single room',
+  Double = 'Double room',
+  Private = 'Private room',
 }

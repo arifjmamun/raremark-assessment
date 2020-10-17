@@ -33,30 +33,19 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
           <Input placeholder="Title" />
         </Form.Item>
 
-        <Form.Item
-          label="Price"
-          name={['property', 'price']}
-          rules={[{ required: true, type: 'number', min: 0 }]}
-        >
+        <Form.Item label="Price" name={['property', 'price']} rules={[{ required: true, type: 'number', min: 0 }]}>
           <InputNumber placeholder="Price per night" />
         </Form.Item>
 
-        <Form.Item
-          label="Select property type"
-          name={['property', 'type']}
-          rules={[{ required: true }]}
-        >
+        <Form.Item label="Select property type" name={['property', 'type']} rules={[{ required: true }]}>
           <Select>
-            <Select.Option value="single">Single</Select.Option>
-            <Select.Option value="double">Double</Select.Option>
+            <Select.Option value="Single room">Single room</Select.Option>
+            <Select.Option value="Double room">Double room</Select.Option>
+            <Select.Option value="Private room">Private room</Select.Option>
           </Select>
         </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name={['property', 'description']}
-          rules={[{ required: true }]}
-        >
+        <Form.Item label="Description" name={['property', 'description']} rules={[{ required: true }]}>
           <Input.TextArea placeholder="Description" />
         </Form.Item>
 
@@ -83,7 +72,9 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
         </Form.Item>
 
         <Form.Item>
-          <Button block type="primary" htmlType="submit">Submit</Button>
+          <Button block type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     </Modal>
