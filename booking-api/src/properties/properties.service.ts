@@ -10,6 +10,8 @@ import { UploadFile } from './types/upload-file.model';
 import { EDateType, LessThanOrEqualDate, MoreThanOrEqualDate } from '../common/utils/datetime.util';
 import { PaginatedList } from '../common/models/paginated-list.model';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { landingPageMock } from './mock-data/landing-page.data';
+import { LandingPageItem } from './types/landing-page-item.model';
 
 @Injectable()
 export class PropertiesService {
@@ -71,6 +73,10 @@ export class PropertiesService {
     } catch (error) {
       throw error;
     }
+  }
+
+  getLandingPageMockData(): Promise<LandingPageItem[]> {
+    return Promise.resolve(landingPageMock);
   }
 
   async findAll(
@@ -151,7 +157,11 @@ export class PropertiesService {
   }
 
   async findOne(id: number): Promise<Property> {
-    return await this.propertiesRepository.findOne(id);
+    const property = await this.propertiesRepository.findOne(id);
+    if (!property) {
+      throw new Error('Property not found!');
+    }
+    return property;
   }
 
   async remove(id: number): Promise<void> {

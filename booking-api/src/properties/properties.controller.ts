@@ -21,6 +21,7 @@ import { PropertiesService } from './properties.service';
 import { UploadFile } from './types/upload-file.model';
 import { PaginatedList } from '../common/models/paginated-list.model';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { LandingPageItem } from './types/landing-page-item.model';
 
 @Controller('properties')
 export class PropertiesController {
@@ -37,7 +38,7 @@ export class PropertiesController {
     }
   }
 
-  @Get()
+  @Get('list')
   async findAll(@Query() query: PropertyListQueryDto): Promise<PaginatedList<Property> | HttpException> {
     try {
       const pageSize = parseInt(query.pageSize) || 4;
@@ -52,9 +53,19 @@ export class PropertiesController {
     }
   }
 
+  @Get('home')
+  getLandingPageMockData(): Promise<LandingPageItem[]> {
+    return this.propertiesService.getLandingPageMockData();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Property> {
-    return await this.propertiesService.findOne(parseInt(id));
+    try {
+      return await this.propertiesService.findOne(parseInt(id));
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Something went wrong!', HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Put(':id')
