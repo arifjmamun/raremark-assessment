@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { Card, Row, Col, Avatar, Spin, Rate, Typography } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -11,6 +12,7 @@ const propertiesService = PropertiesService.getInstance();
 function HomePage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [mockData, setMockData] = useState<LandingPageItem[]>([]);
+  const history = useHistory();
 
   const getMockData = () => {
     setLoading(() => true);
@@ -30,8 +32,9 @@ function HomePage() {
     getMockData();
   }, []);
 
-  const handleSearch = (values: any) => {
-    console.log(values);
+  const handleSearch = (query: any) => {
+    const searchParams = new URLSearchParams(query).toString();
+    history.push(`/search?${searchParams}`)
   };
 
   return (

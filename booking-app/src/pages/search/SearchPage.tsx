@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { List, Row, Col, Typography } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
@@ -16,10 +17,16 @@ function SearchPage() {
   const [data, setData] = useState<Property[]>([]);
   const [count, setCount] = useState<number>(0);
 
+  const location = useLocation();
+  const queryParams: any = {};
+  new URLSearchParams(location.search).forEach((value, key) => {
+    queryParams[key] = value;
+  });
+
   const getProperties = (pageSize = 4, page = 1, query?: any) => {
     setLoading(() => true);
     propertiesService
-      .getProperties(pageSize, page, query)
+      .getProperties(pageSize, page, query || queryParams)
       .then((response) => {
         setLoading(() => false);
         setData(() => response.data.items);
@@ -46,7 +53,7 @@ function SearchPage() {
   return (
     <Row align="middle" justify="center">
       <Col span={24}>
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar queryParams={queryParams} onSearch={handleSearch} />
       </Col>
       <Col span={24}>
         <Row style={{ padding: '0 200px', marginBottom: 25 }}>
