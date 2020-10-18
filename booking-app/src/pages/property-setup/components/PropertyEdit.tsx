@@ -1,39 +1,33 @@
-import React, { useState } from 'react';
-import { DatePicker, Select, Button, InputNumber, Input, Modal, Form, message, Upload } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { DatePicker, Select, Button, InputNumber, Input, Modal, Form, message } from 'antd';
 import { SelectValue } from 'antd/lib/select';
 import { format } from 'date-fns';
+import moment from 'moment';
 
 import { City, countries } from '../data/countries';
 import { DateFormat } from '../../../constants/date-format';
 import { PropertiesService } from '../../../services/PropertiesService';
+import { Property } from '../models/Property';
 
 interface Props {
   visible: boolean;
   onCancel: () => void;
   onSubmitted: () => void;
+  property: Property;
 }
 
 const propertyService = PropertiesService.getInstance();
 
-function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
+function PropertyEdit({ visible, property: selectedProperty, onCancel, onSubmitted }: Props) {
   const [form] = Form.useForm();
   const [requiredMark, setRequiredMarkType] = useState<boolean | 'optional'>('optional');
   const [loading, setLoading] = useState<boolean>(false);
-  const [fileList, updateFileList] = useState<any[]>([]);
   const [cities, setCities] = useState<City[]>([]);
 
-  const uploadProps = {
-    fileList,
-    beforeUpload: (file: any) => {
-      const isValidFileType = ['image/png', 'image/jpeg', 'image/jpg'].includes(file.type);
-      if (!isValidFileType) {
-        message.error(`${file.name} is not a image file`);
-      }
-      return isValidFileType;
-    },
-    onChange: (info: any) => {
-      updateFileList(info.fileList.filter((file: any) => !!file.status));
+  const initialValues = {
+    property: {
+      ...selectedProperty,
+      availableDateRange: [moment(selectedProperty.fromDate), moment(selectedProperty.toDate)]
     }
   };
 
@@ -42,11 +36,15 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
   };
 
   const onChangeCountry = (value: SelectValue) => {
-    const country = countries.find(country => country.label === value);
+    const country = countries.find((country) => country.label === value);
     setCities(() => country?.cities ?? []);
   };
 
-  const handleAddProperty = ({property}: any) => {
+  useEffect(() => {
+    onChangeCountry(selectedProperty.country);
+  }, []);
+
+  const handleUpdateProperty = ({ property }: any) => {
     if (property.availableDateRange) {
       const [from, to]: [moment.Moment, moment.Moment] = property.availableDateRange;
       const fromDate = format(from.toDate(), DateFormat.Date);
@@ -59,33 +57,37 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
       delete property.availableDateRange;
     }
 
-    let files: File[] = [];
-    if (property.images.fileList && property.images.fileList.length) {
-      files = property.images.fileList.map((item: any) => item.originFileObj);
-      delete property.images;
-    }
+    property = {
+      ...property,
+      id: selectedProperty.id
+    };
 
     setLoading(() => true);
-    propertyService.addProperty(property, files).then((response) => {
-      setLoading(() => false);
-      onSubmitted();
-    }).catch((error) => {
-      setLoading(() => false);
-      message.error(error);
-    });
+    propertyService
+      .updateProperty(property.id, property)
+      .then((response) => {
+        setLoading(() => false);
+        if (response.status === 200) {
+          onSubmitted();
+        }
+      })
+      .catch((error) => {
+        setLoading(() => false);
+        message.error(error);
+      });
   };
 
   return (
-    <Modal title="Add Property" visible={visible} onCancel={onCancel} footer={null} maskClosable={false}>
+    <Modal title="Update Property" visible={visible} onCancel={onCancel} footer={null} maskClosable={false}>
       <Form
         size="large"
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
         form={form}
-        initialValues={{ requiredMark }}
+        initialValues={{ requiredMark, ...initialValues }}
         onValuesChange={onRequiredTypeChange}
         requiredMark={requiredMark}
-        onFinish={handleAddProperty}
+        onFinish={handleUpdateProperty}
       >
         <Form.Item label="Title" name={['property', 'title']} rules={[{ required: true }]}>
           <Input placeholder="Title" />
@@ -93,12 +95,6 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
 
         <Form.Item label="Price" name={['property', 'price']} rules={[{ required: true, type: 'number', min: 0 }]}>
           <InputNumber placeholder="Price per night" />
-        </Form.Item>
-
-        <Form.Item label="Images" name={['property', 'images']} rules={[{ required: true }]}>
-          <Upload style={{ width: '100%' }} {...uploadProps}>
-            <Button icon={<UploadOutlined />}>Upload images</Button>
-          </Upload>
         </Form.Item>
 
         <Form.Item label="Select property type" name={['property', 'type']} rules={[{ required: true }]}>
@@ -130,11 +126,11 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
         </Form.Item>
 
         <Button disabled={loading} loading={loading} block type="primary" htmlType="submit">
-          Save
+          Save changes
         </Button>
       </Form>
     </Modal>
   );
 }
 
-export { PropertyAdd as default };
+export { PropertyEdit as default };

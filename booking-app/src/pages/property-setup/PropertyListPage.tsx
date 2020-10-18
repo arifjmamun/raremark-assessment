@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Table, Space } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Card, Table, Space, Modal, message, Image } from 'antd';
+import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { format } from 'date-fns';
 import { ColumnsType, TablePaginationConfig } from 'antd/lib/table';
 
@@ -9,59 +9,86 @@ import { Property } from './models/Property';
 import { DateFormat } from '../../constants/date-format';
 import CardHeader from './components/CardHeader';
 import PropertyAdd from './components/PropertyAdd';
-
-const columns: ColumnsType<Property> = [
-  {
-    title: 'Title',
-    dataIndex: 'title',
-    key: 'title'
-  },
-  {
-    title: 'Description',
-    dataIndex: 'description',
-    key: 'description'
-  },
-  {
-    title: 'Price',
-    dataIndex: 'price',
-    key: 'price'
-  },
-  {
-    title: 'From Date',
-    dataIndex: 'fromDate',
-    key: 'fromDate',
-    render: (date: string) => format(new Date(date), DateFormat.Date)
-  },
-  {
-    title: 'To Date',
-    dataIndex: 'toDate',
-    key: 'toDate',
-    render: (date: string) => format(new Date(date), DateFormat.Date)
-  },
-  {
-    title: 'Type',
-    dataIndex: 'type',
-    key: 'type'
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: () => (
-      <Space size="middle">
-        <Button type="link" icon={<DeleteOutlined />} />
-        <Button type="link" icon={<EditOutlined />} />
-      </Space>
-    )
-  }
-];
+import PropertyEdit from './components/PropertyEdit';
+import { basePath } from '../../constants/base';
 
 const propertiesService = PropertiesService.getInstance();
 
 function PropertyListPage() {
+  const columns: ColumnsType<Property> = [
+    {
+      title: 'Image',
+      dataIndex: 'images',
+      key: 'image',
+      render: (images: string[]) => (
+        <Image        
+          width={100}
+          src={images.length ? `${basePath}${images[0]}` : ''}
+        />
+      )
+    },
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title'
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      width: 350,
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
+      key: 'price',
+      width: 100,
+      render: (text: any) => `TK. ${text}`
+    },
+    {
+      title: 'Country',
+      dataIndex: 'country',
+      key: 'country'
+    },
+    {
+      title: 'City',
+      dataIndex: 'city',
+      key: 'city'
+    },
+    {
+      title: 'From Date',
+      dataIndex: 'fromDate',
+      key: 'fromDate',
+      render: (date: string) => format(new Date(date), DateFormat.Date)
+    },
+    {
+      title: 'To Date',
+      dataIndex: 'toDate',
+      key: 'toDate',
+      render: (date: string) => format(new Date(date), DateFormat.Date)
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type'
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (item: any) => (
+        <Space size="middle">
+          <Button type="link" icon={<DeleteOutlined />} onClick={() => handleOnDeleteProperty(item)} />
+          <Button type="link" icon={<EditOutlined />} onClick={() => setPropertyToUpdate(item)} />
+        </Space>
+      )
+    }
+  ];
+
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Property[]>([]);
   const [count, setCount] = useState<number>(0);
   const [visibleAddModal, setAddModalVisibility] = useState<boolean>(false);
+  const [selectedPropertyToUpdate, setPropertyToUpdate] = useState<Property>();
 
   const getProperties = (pageSize = 20, page = 1) => {
     setLoading(() => true);
@@ -90,9 +117,29 @@ function PropertyListPage() {
     setAddModalVisibility(() => true);
   };
 
-  const handleOnAddedProperty = () => {
+  const handleOnSubmittedProperty = () => {
     setAddModalVisibility(() => false);
-    getProperties();    
+    setPropertyToUpdate(() => undefined);
+    getProperties();
+  };
+
+  const handleOnDeleteProperty = (property: Property) => {
+    Modal.confirm({
+      title: 'Do you Want to delete the property?',
+      icon: <ExclamationCircleOutlined />,
+      content: "You won't be able to undo this.",
+      onOk() {
+        propertiesService
+          .deleteProperty(property.id)
+          .then((respponse) => {
+            if (respponse.status === 200) {
+              getProperties();
+            }
+          })
+          .catch((error) => message.error(error));
+      },
+      onCancel() {}
+    });
   };
 
   return (
@@ -111,8 +158,16 @@ function PropertyListPage() {
       <PropertyAdd
         visible={visibleAddModal}
         onCancel={() => setAddModalVisibility(() => false)}
-        onSubmitted={handleOnAddedProperty}
+        onSubmitted={handleOnSubmittedProperty}
       />
+      {selectedPropertyToUpdate && (
+        <PropertyEdit
+          visible={!!selectedPropertyToUpdate}
+          property={selectedPropertyToUpdate}
+          onCancel={() => setPropertyToUpdate(() => undefined)}
+          onSubmitted={handleOnSubmittedProperty}
+        />
+      )}
     </Card>
   );
 }

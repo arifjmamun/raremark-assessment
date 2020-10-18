@@ -8,10 +8,9 @@ import { Carousel } from 'react-responsive-carousel';
 import SearchBar from '../../components/SearchBar';
 import { PropertiesService } from '../../services/PropertiesService';
 import { Property } from '../property-setup/models/Property';
+import { basePath } from '../../constants/base';
 
 const propertiesService = PropertiesService.getInstance();
-const basePath = `http://localhost:8888`;
-
 function SearchPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Property[]>([]);

@@ -4,6 +4,8 @@ import { PaginatedList } from '../models/PaginatedList';
 import { Property } from '../pages/property-setup/models/Property';
 import { LandingPageItem } from '../pages/home/models/LandingPageItem';
 import { CreateProperty } from './../pages/property-setup/models/CreateProperty';
+import { UpdateProperty } from '../pages/property-setup/models/UpdateProperty';
+import { basePath } from '../constants/base';
 
 export class PropertiesService {
   private constructor() {}
@@ -19,7 +21,7 @@ export class PropertiesService {
   }
 
   public get baseUrl(): string {
-    return 'http://localhost:8888/api';
+    return `${basePath}/api/properties`;
   }
 
   public getProperties = async (
@@ -32,11 +34,11 @@ export class PropertiesService {
       pageSize,
       page
     };
-    return await axios.get<PaginatedList<Property>>(`${this.baseUrl}/properties/list`, { params: queryParams });
+    return await axios.get<PaginatedList<Property>>(`${this.baseUrl}/list`, { params: queryParams });
   };
 
   public getMockApiData = async (): Promise<AxiosResponse<LandingPageItem[]>> => {
-    return await axios.get<LandingPageItem[]>(`${this.baseUrl}/properties/home`);
+    return await axios.get<LandingPageItem[]>(`${this.baseUrl}/home`);
   };
 
   public addProperty = async (
@@ -54,6 +56,14 @@ export class PropertiesService {
       });
     }
 
-    return await axios.post<Property>(`${this.baseUrl}/properties`, formData);
+    return await axios.post<Property>(`${this.baseUrl}`, formData);
+  };
+
+  public updateProperty = async (id: number, payload: UpdateProperty): Promise<AxiosResponse<Property>> => {
+    return await axios.put<Property>(`${this.baseUrl}/${id}`, payload);
+  };
+
+  public deleteProperty = async (id: number): Promise<AxiosResponse> => {
+    return await axios.delete(`${this.baseUrl}/${id}`);
   };
 }

@@ -94,12 +94,14 @@ export class PropertiesService {
 
       if (searchTerm) {
         searchTerm = `%${searchTerm}%`;
-        conditions.push(...[
-          { country: Like(searchTerm) }, 
-          { city: Like(searchTerm) },
-          { description: Like(searchTerm) },
-          { title: Like(searchTerm) }
-        ]);
+        conditions.push(
+          ...[
+            { country: Like(searchTerm) },
+            { city: Like(searchTerm) },
+            { description: Like(searchTerm) },
+            { title: Like(searchTerm) }
+          ]
+        );
       }
 
       if (fromDate && toDate) {
@@ -110,7 +112,7 @@ export class PropertiesService {
         }
         const dateRangeCndition: FindConditions<Property> = {
           fromDate: MoreThanOrEqualDate(rangeFrom, EDateType.Datetime),
-          toDate: LessThanOrEqualDate(rangeTo, EDateType.Datetime)
+          toDate: MoreThanOrEqualDate(rangeTo, EDateType.Datetime)
         };
         conditions.push(dateRangeCndition);
       }
@@ -152,8 +154,8 @@ export class PropertiesService {
       const { fromDate, toDate } = updatePropertyDto;
 
       if (fromDate && toDate) {
-        const rangeFrom = new Date(new Date(fromDate).setHours(0, 0, 0));
-        const rangeTo = new Date(new Date(toDate).setHours(23, 59, 59));
+        const rangeFrom = new Date(`${fromDate}T00:00:00Z`);
+        const rangeTo = new Date(`${toDate}T23:59:59Z`);
         if (rangeFrom > rangeTo) {
           throw new Error('Invalid date range');
         }
