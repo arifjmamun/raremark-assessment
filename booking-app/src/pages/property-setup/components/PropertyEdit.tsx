@@ -42,7 +42,7 @@ function PropertyEdit({ visible, property: selectedProperty, onCancel, onSubmitt
 
   useEffect(() => {
     onChangeCountry(selectedProperty.country);
-  }, []);
+  }, [selectedProperty.country]);
 
   const handleUpdateProperty = ({ property }: any) => {
     if (property.availableDateRange) {

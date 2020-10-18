@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { List, Row, Col, Typography } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
@@ -11,12 +11,14 @@ import { Property } from '../property-setup/models/Property';
 import { basePath } from '../../constants/base';
 
 const propertiesService = PropertiesService.getInstance();
+
 function SearchPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<Property[]>([]);
-  const [count, setCount] = useState<number>(0);
+  const [count, setCount] = useState<number>();
 
   const location = useLocation();
+  const history = useHistory();
   const queryParams: any = {};
   new URLSearchParams(location.search).forEach((value, key) => {
     queryParams[key] = value;
@@ -49,6 +51,10 @@ function SearchPage() {
     getProperties(4, 1, query);
   };
 
+  const handleNavigateToDetailPage = (property: Property) => {
+    history.push(`/properties/detail/${property.id}`);
+  };
+
   return (
     <Row align="middle" justify="center">
       <Col span={24}>
@@ -68,7 +74,7 @@ function SearchPage() {
             }}
             dataSource={data}
             renderItem={(item) => (
-              <List.Item key={item.id}>
+              <List.Item key={item.id} onClick={() => handleNavigateToDetailPage(item)} style={{ cursor: 'pointer' }}>
                 <Row>
                   <Col>
                     <Carousel showThumbs={false} width={400}>

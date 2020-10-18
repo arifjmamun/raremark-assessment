@@ -59,6 +59,10 @@ export class PropertiesService {
     return await axios.post<Property>(`${this.baseUrl}`, formData);
   };
 
+  public getProperty = async (id: number): Promise<AxiosResponse<Property>> => {
+    return await axios.get<Property>(`${this.baseUrl}/${id}`);
+  };
+
   public updateProperty = async (id: number, payload: UpdateProperty): Promise<AxiosResponse<Property>> => {
     return await axios.put<Property>(`${this.baseUrl}/${id}`, payload);
   };
