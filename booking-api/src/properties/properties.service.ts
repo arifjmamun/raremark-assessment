@@ -123,7 +123,8 @@ export class PropertiesService {
       const [properties, count] = await this.propertiesRepository.findAndCount({
         where: conditions,
         skip: pageSize * (page - 1),
-        take: pageSize
+        take: pageSize,
+        order: { id: 'DESC' }
       });
 
       return PaginatedList.create<Property>(count, properties);

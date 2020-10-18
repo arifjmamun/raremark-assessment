@@ -90,6 +90,11 @@ function PropertyListPage() {
     setAddModalVisibility(() => true);
   };
 
+  const handleOnAddedProperty = () => {
+    setAddModalVisibility(() => false);
+    getProperties();    
+  };
+
   return (
     <Card title={<CardHeader onAdd={handleOnAddProperty} />} bordered={false} style={{ marginTop: 15 }}>
       <Table
@@ -106,7 +111,7 @@ function PropertyListPage() {
       <PropertyAdd
         visible={visibleAddModal}
         onCancel={() => setAddModalVisibility(() => false)}
-        onSubmitted={() => {}}
+        onSubmitted={handleOnAddedProperty}
       />
     </Card>
   );

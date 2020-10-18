@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { DatePicker, Select, Button, InputNumber, Input, Modal, Form, message, Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { City, countries } from '../data/countries';
 import { SelectValue } from 'antd/lib/select';
+import { format } from 'date-fns';
+
+import { City, countries } from '../data/countries';
+import { DateFormat } from '../../../constants/date-format';
+import { PropertiesService } from '../../../services/PropertiesService';
 
 interface Props {
   visible: boolean;
@@ -10,9 +14,12 @@ interface Props {
   onSubmitted: () => void;
 }
 
+const propertyService = PropertiesService.getInstance();
+
 function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
   const [form] = Form.useForm();
   const [requiredMark, setRequiredMarkType] = useState<boolean | 'optional'>('optional');
+  const [loading, setLoading] = useState<boolean>(false);
   const [fileList, updateFileList] = useState<any[]>([]);
   const [cities, setCities] = useState<City[]>([]);
 
@@ -39,8 +46,33 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
     setCities(() => country?.cities ?? []);
   };
 
-  const handleAddProperty = (values: any) => {
-    console.log(values);
+  const handleAddProperty = ({property}: any) => {
+    if (property.availableDateRange) {
+      const [from, to]: [moment.Moment, moment.Moment] = property.availableDateRange;
+      const fromDate = format(from.toDate(), DateFormat.Date);
+      const toDate = format(to.toDate(), DateFormat.Date);
+      property = {
+        ...property,
+        fromDate,
+        toDate
+      };
+      delete property.availableDateRange;
+    }
+
+    let files: File[] = [];
+    if (property.images.fileList && property.images.fileList.length) {
+      files = property.images.fileList.map((item: any) => item.originFileObj);
+      delete property.images;
+    }
+
+    setLoading(() => true);
+    propertyService.addProperty(property, files).then((response) => {
+      setLoading(() => false);
+      onSubmitted();
+    }).catch((error) => {
+      setLoading(() => false);
+      message.error(error);
+    });
   };
 
   return (
@@ -97,7 +129,7 @@ function PropertyAdd({ visible, onCancel, onSubmitted }: Props) {
           <DatePicker.RangePicker />
         </Form.Item>
 
-        <Button block type="primary" htmlType="submit">
+        <Button disabled={loading} loading={loading} block type="primary" htmlType="submit">
           Submit
         </Button>
       </Form>
